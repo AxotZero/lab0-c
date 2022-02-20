@@ -91,7 +91,10 @@ void q_release_element(element_t *e)
  */
 int q_size(struct list_head *head)
 {
-    return -1;
+    int len = 0;
+    for (struct list_head *node = head; node; node = node->next)
+        ++len;
+    return len;
 }
 
 /*
