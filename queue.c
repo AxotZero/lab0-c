@@ -30,32 +30,28 @@ void q_free(struct list_head *l)
     if (!l)
         return;
 
-    element_t *safe = NULL;
-    element_t *prev = NULL;
-
+    element_t *safe = NULL, *prev = NULL;
     list_for_each_entry_safe (prev, safe, l, list)
         q_release_element(prev);
     free(l);
 }
 
+/*
+ * New an element_t given the string.
+ */
 element_t *new_element(char *s)
 {
     element_t *q = malloc(sizeof(element_t));
     if (!q)
         return NULL;
 
-    size_t s_len = strlen(s);
-    q->value = malloc(s_len + 1);
-
+    q->value = strdup(s);
     if (!q->value) {
         free(q);
         return NULL;
     }
-    strncpy(q->value, s, strlen(s));
-    q->value[s_len] = '\0';
     return q;
 }
-
 
 /*
  * Attempt to insert element at head of queue.
@@ -104,6 +100,26 @@ bool q_insert_tail(struct list_head *head, char *s)
 }
 
 /*
+ * remove target node from the list and copy the removed string to sp
+ * (up to a maximum of bufsize-1 characters, plus a null terminator.)
+ */
+element_t *q_remove(struct list_head *target, char *sp, size_t bufsize)
+{
+    // remove target
+    list_del_init(target);
+
+    // get head element
+    element_t *ret = container_of(target, element_t, list);
+
+    // copy remove element value to sp
+    if (sp && ret->value) {
+        strncpy(sp, ret->value, bufsize - 1);
+        sp[bufsize - 1] = '\0';
+    }
+    return ret;
+}
+
+/*
  * Attempt to remove element from head of queue.
  * Return target element.
  * Return NULL if queue is NULL or empty.
@@ -124,17 +140,7 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
         return NULL;
 
     // remove head
-    struct list_head *target = head->next;
-    list_del_init(target);
-
-    // get head element
-    element_t *ret = container_of(target, element_t, list);
-
-    // copy remove element value to sp
-    if (sp && ret->value) {
-        strncpy(sp, ret->value, bufsize - 1);
-        sp[bufsize - 1] = '\0';
-    }
+    element_t *ret = q_remove(head->next, sp, bufsize);
     return ret;
 }
 
@@ -148,18 +154,8 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
     if (!head || list_empty(head))
         return NULL;
 
-    // remove head
-    struct list_head *target = head->prev;
-    list_del_init(target);
-
-    // get head element
-    element_t *ret = container_of(target, element_t, list);
-
-    // copy remove element value to sp
-    if (sp && ret->value) {
-        strncpy(sp, ret->value, bufsize - 1);
-        sp[bufsize - 1] = '\0';
-    }
+    // remove tail
+    element_t *ret = q_remove(head->prev, sp, bufsize);
     return ret;
 }
 
@@ -201,8 +197,6 @@ int q_size(struct list_head *head)
  */
 bool q_delete_mid(struct list_head *head)
 {
-    // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
-
     // check if it's NULL or empty
     if (!head || list_empty(head))
         return false;
@@ -233,8 +227,6 @@ bool q_delete_mid(struct list_head *head)
  */
 bool q_delete_dup(struct list_head *head)
 {
-    // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
-
     // check if it's NULL or empty
     if (!head || list_empty(head))
         return false;
@@ -243,11 +235,9 @@ bool q_delete_dup(struct list_head *head)
     if (list_is_singular(head))
         return true;
 
-    struct list_head *first_node = head->next;
-    struct list_head *end_node = head->next;
-    struct list_head *remove_head = q_new();
-    struct list_head *tmp = q_new();
 
+    struct list_head *first_node = head->next, *end_node = head->next;
+    struct list_head *remove_head = q_new(), *tmp = q_new();
     while (end_node != head) {
         // search the start and end of duplicates string node
         element_t *first_element = container_of(first_node, element_t, list);
@@ -325,6 +315,10 @@ void q_reverse(struct list_head *head)
     swap_list_head(&curr->prev, &curr->next);
 }
 
+/*
+ * Merge two sorted list.
+ * Each list_head of the list has a container element_t.
+ */
 struct list_head *merge_two_list(struct list_head *a, struct list_head *b)
 {
     struct list_head *head = NULL, **ptr = &head;
@@ -339,7 +333,9 @@ struct list_head *merge_two_list(struct list_head *a, struct list_head *b)
     *ptr = (struct list_head *) ((uintptr_t) a | (uintptr_t) b);
     return head;
 }
-
+/*
+ * recursive function for q_sort.
+ */
 struct list_head *merge_sort(struct list_head *head)
 {
     if (!head || !head->next)
@@ -367,14 +363,19 @@ void q_sort(struct list_head *head)
     if (!head || list_empty(head) || list_is_singular(head))
         return;
 
-    head->prev->next = NULL;  // for merge_sort for-loop stop condition
+    // remove the link of tail and head to create stop condition for merge_sort
+    head->prev->next = NULL;
+
+    // merge_sort
     head->next = merge_sort(head->next);
 
+    // assign prev to each node
     struct list_head *tmp = head;
     while (tmp->next) {
         tmp->next->prev = tmp;
         tmp = tmp->next;
     }
+    // concat head and tail
     tmp->next = head;
     head->prev = tmp;
 }
