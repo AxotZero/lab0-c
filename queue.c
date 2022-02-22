@@ -201,18 +201,14 @@ bool q_delete_mid(struct list_head *head)
     if (!head || list_empty(head))
         return false;
 
-    // search middle node
-    struct list_head **slow = &head->next;
-    for (struct list_head *fast = head->next->next;
-         fast != head && fast->next != head; fast = fast->next->next)
-        slow = &(*slow)->next;
-
-    // get target element
-    element_t *target = container_of(*slow, element_t, list);
+    // search middle node by both sids
+    struct list_head *r = head->next, *l = head->prev;
+    for (; r != l && r->next != l; r = r->next)
+        l = l->prev;
 
     // remove node and release element
-    list_del_init(*slow);
-    q_release_element(target);
+    list_del_init(l);
+    q_release_element(container_of(l, element_t, list));
     return true;
 }
 
@@ -234,7 +230,6 @@ bool q_delete_dup(struct list_head *head)
     // check if it's singular
     if (list_is_singular(head))
         return true;
-
 
     struct list_head *first_node = head->next, *end_node = head->next;
     struct list_head *remove_head = q_new(), *tmp = q_new();
@@ -265,8 +260,6 @@ bool q_delete_dup(struct list_head *head)
  */
 void q_swap(struct list_head *head)
 {
-    // https://leetcode.com/problems/swap-nodes-in-pairs/
-
     // check if it's NULL or empty
     if (!head || list_empty(head))
         return;
@@ -278,7 +271,7 @@ void q_swap(struct list_head *head)
         curr = node;
         node = node->next->next;
 
-        // swap
+        // swap adjacent nodes.
         curr->next = next->next;
         next->prev = curr->prev;
         curr->prev->next = next;
@@ -309,7 +302,6 @@ void q_reverse(struct list_head *head)
         return;
 
     struct list_head *safe = NULL, *curr = NULL;
-
     list_for_each_safe (curr, safe, head)
         swap_list_head(&curr->prev, &curr->next);
     swap_list_head(&curr->prev, &curr->next);
