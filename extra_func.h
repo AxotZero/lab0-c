@@ -11,7 +11,7 @@
  * Following code are for shuffle
  */
 void q_shuffle(struct list_head *head);
-
+void q_shuffle_dp(struct list_head *head);
 
 
 /*

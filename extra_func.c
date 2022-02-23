@@ -38,6 +38,9 @@ void swap_node(struct list_head *a, struct list_head *b)
     }
 }
 
+/*
+ * Get list node by given index
+ */
 struct list_head *get_node_by_idx(struct list_head *head, int idx)
 {
     for (; idx > 0; --idx)
@@ -46,7 +49,9 @@ struct list_head *get_node_by_idx(struct list_head *head, int idx)
 }
 
 /*
- * Shuffle the list with Fisher–Yates shuffle
+ * Shuffle the list with Fisher–Yates shuffle algorithm
+ * Time Complexity: O(N^2)
+ * Space Complexity: O(1)
  */
 void q_shuffle(struct list_head *head)
 {
@@ -58,6 +63,39 @@ void q_shuffle(struct list_head *head)
         swap_node(curr, get_node_by_idx(head, rand() % i));
         curr = curr_next;
     }
+}
+
+/*
+ * Utilize extra space to shuffle the list using  with Fisher–Yates shuffle
+ * algorithm Time Complexity: O(N) Space Complexity: O(N)
+ */
+void q_shuffle_dp(struct list_head *head)
+{
+    srand(time(NULL));
+    int len = q_size(head);
+
+    // list space to store all addressed of the queue.
+    struct list_head **dp = malloc(sizeof(struct list_head **) * len);
+    struct list_head *curr = head->next;
+    for (int i = 0; i < len; ++i, curr = curr->next)
+        dp[i] = curr;
+
+    // shuffle
+    curr = head->prev;
+    struct list_head *curr_prev = NULL, *tmp = NULL;
+    for (int i = len; i > 1; --i) {
+        curr_prev = curr->prev;
+        // swap nodes
+        tmp = dp[rand() % i];
+        swap_node(curr, tmp);
+
+        // swap addresses in the list space
+        swap_ptr(&dp[i], &tmp);
+
+        // move to next
+        curr = curr_prev;
+    }
+    free(dp);
 }
 
 /*

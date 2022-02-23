@@ -748,6 +748,28 @@ static bool do_shuffle(int argc, char *argv[])
     return !error_check();
 }
 
+static bool do_shuffle_dp(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+
+    if (!l_meta.l)
+        report(3, "Warning: Try to access null queue");
+    error_check();
+
+    set_noallocate_mode(true);
+    if (exception_setup(true))
+        q_shuffle_dp(l_meta.l);
+    exception_cancel();
+
+    set_noallocate_mode(false);
+
+    show_queue(3);
+    return !error_check();
+}
+
 static bool is_circular()
 {
     struct list_head *cur = l_meta.l->next;
@@ -856,7 +878,12 @@ static void console_init()
     ADD_COMMAND(
         linux_sort,
         "                | Sort queue in ascending order with linux sort");
-    ADD_COMMAND(shuffle, "                | shuffle the queue");
+    ADD_COMMAND(shuffle,
+                "                | shuffle the queue with O(n^2) time "
+                "complexity and constant space complexity");
+    ADD_COMMAND(shuffle_dp,
+                "                | shuffle the queue with O(n) time and space "
+                "complexity");
     ADD_COMMAND(
         size, " [n]            | Compute queue size n times (default: n == 1)");
     ADD_COMMAND(show, "                | Show queue contents");
