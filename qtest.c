@@ -31,6 +31,7 @@
  * OK as long as head field of queue_t structure is in first position in
  * solution code
  */
+#include "extra_func.h"
 #include "queue.h"
 
 #include "console.h"
@@ -640,6 +641,49 @@ bool do_sort(int argc, char *argv[])
     return ok && !error_check();
 }
 
+bool do_linux_sort(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+
+    if (!l_meta.l)
+        report(3, "Warning: Calling sort on null queue");
+    error_check();
+
+    int cnt = q_size(l_meta.l);
+    if (cnt < 2)
+        report(3, "Warning: Calling sort on single node");
+    error_check();
+
+    set_noallocate_mode(true);
+    if (exception_setup(true))
+        linux_sort(l_meta.l);
+    exception_cancel();
+    set_noallocate_mode(false);
+
+    bool ok = true;
+    if (l_meta.size) {
+        for (struct list_head *cur_l = l_meta.l->next;
+             cur_l != l_meta.l && --cnt; cur_l = cur_l->next) {
+            /* Ensure each element in ascending order */
+            /* FIXME: add an option to specify sorting order */
+            element_t *item, *next_item;
+            item = list_entry(cur_l, element_t, list);
+            next_item = list_entry(cur_l->next, element_t, list);
+            if (strcasecmp(item->value, next_item->value) > 0) {
+                report(1, "ERROR: Not sorted in ascending order");
+                ok = false;
+                break;
+            }
+        }
+    }
+
+    show_queue(3);
+    return ok && !error_check();
+}
+
 static bool do_dm(int argc, char *argv[])
 {
     if (argc != 1) {
@@ -787,6 +831,9 @@ static void console_init()
         "                | Remove from head of queue without reporting value.");
     ADD_COMMAND(reverse, "                | Reverse queue");
     ADD_COMMAND(sort, "                | Sort queue in ascending order");
+    ADD_COMMAND(
+        linux_sort,
+        "                | Sort queue in ascending order with linux sort");
     ADD_COMMAND(
         size, " [n]            | Compute queue size n times (default: n == 1)");
     ADD_COMMAND(show, "                | Show queue contents");
