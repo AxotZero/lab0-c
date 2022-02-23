@@ -1,5 +1,65 @@
 #include "extra_func.h"
 
+
+void swap_ptr(struct list_head **a, struct list_head **b)
+{
+    struct list_head *tmp = *a;
+    *a = *b;
+    *b = tmp;
+}
+
+void swap_node(struct list_head *a, struct list_head *b)
+{
+    if (a == b)
+        return;
+    else if (a->next == b || b->next == a)  // if they are neighbors
+    {
+        // decide who is left and who is right
+        struct list_head *l = a, *r = b;
+        if (b->next == a) {
+            r = a;
+            l = b;
+        }
+
+        // swap
+        l->next = r->next;
+        r->prev = l->prev;
+        l->prev->next = r;
+        l->prev = r;
+        r->next->prev = l;
+        r->next = l;
+    } else {
+        a->next->prev = b;
+        b->next->prev = a;
+        a->prev->next = b;
+        b->prev->next = a;
+        swap_ptr(&a->next, &b->next);
+        swap_ptr(&a->prev, &b->prev);
+    }
+}
+
+struct list_head *get_node_by_idx(struct list_head *head, int idx)
+{
+    for (; idx > 0; --idx)
+        head = head->next;
+    return head;
+}
+
+/*
+ * Shuffle the list with Fisher–Yates shuffle
+ */
+void q_shuffle(struct list_head *head)
+{
+    srand(time(NULL));
+    struct list_head *curr = head->prev;
+    struct list_head *curr_next = NULL;
+    for (int i = q_size(head); i > 1; --i) {
+        curr_next = curr->prev;
+        swap_node(curr, get_node_by_idx(head, rand() % i));
+        curr = curr_next;
+    }
+}
+
 /*
  * Compare two element_t->value
  */

@@ -1,9 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "list.h"
 #include "queue.h"
+
+
+/*
+ * Following code are for shuffle
+ */
+void q_shuffle(struct list_head *head);
+
+
 
 /*
  * Following code are for linux_sort
