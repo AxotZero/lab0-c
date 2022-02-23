@@ -8,6 +8,9 @@ void swap_ptr(struct list_head **a, struct list_head **b)
     *b = tmp;
 }
 
+/*
+ * Get list node by given index
+ */
 void swap_node(struct list_head *a, struct list_head *b)
 {
     if (a == b)
@@ -66,8 +69,9 @@ void q_shuffle(struct list_head *head)
 }
 
 /*
- * Utilize extra space to shuffle the list using  with Fisher–Yates shuffle
- * algorithm Time Complexity: O(N) Space Complexity: O(N)
+ * Utilize extra space to shuffle with Fisher–Yates shuffle
+ * Time Complexity: O(N)
+ * Space Complexity: O(N)
  */
 void q_shuffle_dp(struct list_head *head)
 {

@@ -1,11 +1,10 @@
-# Test of insert_head and remove_head
 option fail 0
 option malloc 0
 
 new
-ih axot 250000
+ih eeee 250000
 ih cccc 250000
-ih emma 250000
+ih aaaa 250000
 
 # sort sorted array
 time sort
