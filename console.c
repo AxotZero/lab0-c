@@ -585,12 +585,12 @@ int cmd_select(int nfds,
         /* Commandline input available */
         FD_CLR(infd, readfds);
         result--;
-        if (has_infile) {
-            char *cmdline;
-            cmdline = readline();
-            if (cmdline)
-                interpret_cmd(cmdline);
-        }
+
+        char *cmdline;
+        cmdline = readline();
+        if (cmdline)
+            interpret_cmd(cmdline);
+
     } else if (readfds && FD_ISSET(listenfd, readfds)) {
         FD_CLR(listenfd, readfds);
         --result;
