@@ -850,6 +850,13 @@ static bool do_show(int argc, char *argv[])
     return show_queue(0);
 }
 
+static bool do_web()
+{
+    listenfd = open_listenfd();
+    noise = false;
+    return true;
+}
+
 static void console_init()
 {
     ADD_COMMAND(new, "                | Create new queue");
@@ -892,6 +899,7 @@ static void console_init()
         dedup, "                | Delete all nodes that have duplicate string");
     ADD_COMMAND(swap,
                 "                | Swap every two adjacent nodes in queue");
+    ADD_COMMAND(web, "                | Host a web server on port 23");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
